@@ -3,8 +3,8 @@
  *
  * Root component and router shell for the Vantage website.
  * Currently renders routes for Home, a dedicated Features page,
- * and a dedicated Contact page. Additional routes for Dashboard,
- * Signup, Login, and Onboarding can be added later.
+ * a dedicated Contact page, and the Login page. Additional routes
+ * for Dashboard, Signup, and Onboarding can be added later.
  *
  * Includes a ScrollHandler helper that:
  *  - Scrolls to a hash target (e.g. #pricing) when the URL
@@ -18,6 +18,7 @@ import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import Home from "./pages/Home";
 import FeaturesPage from "./pages/FeaturesPage";
 import ContactPage from "./pages/ContactPage";
+import LoginPage from "./pages/LoginPage";
 
 /**
  * ScrollHandler — Watches both the pathname and hash of the
@@ -73,6 +74,7 @@ export default function App() {
         <Route path="/" element={<Home />} />
         <Route path="/features" element={<FeaturesPage />} />
         <Route path="/contact" element={<ContactPage />} />
+        <Route path="/login" element={<LoginPage />} />
       </Routes>
     </BrowserRouter>
   );
