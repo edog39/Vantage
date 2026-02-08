@@ -135,16 +135,40 @@ export default function SignUp() {
     setLoading(true);
 
     try {
-      /*
-       * TODO: Replace this simulated delay with a real fetch call
-       * to the /api/users or /api/auth/signup endpoint.
-       */
-      await new Promise((resolve) => setTimeout(resolve, 1500));
+      const res = await fetch("/api/auth/signup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: name.trim(),
+          email: email.trim(),
+          password,
+          role: "student",
+        }),
+      });
 
-      // eslint-disable-next-line no-console
-      console.log("Sign up submitted:", { name, email });
-    } catch {
-      /* Placeholder — surface API errors to the user here */
+      const data = await res.json().catch(() => ({}));
+
+      if (!res.ok) {
+        setErrors((prev) => ({
+          ...prev,
+          email: data.error || "Sign up failed",
+        }));
+        return;
+      }
+
+      if (data.token) {
+        localStorage.setItem("vantage_token", data.token);
+      }
+      if (data.user) {
+        localStorage.setItem("vantage_user", JSON.stringify(data.user));
+      }
+
+      window.location.href = "/";
+    } catch (err) {
+      setErrors((prev) => ({
+        ...prev,
+        email: "Unable to connect. Please try again.",
+      }));
     } finally {
       setLoading(false);
     }

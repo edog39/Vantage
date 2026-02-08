@@ -94,16 +94,39 @@ export default function Login() {
     setLoading(true);
 
     try {
-      /*
-       * TODO: Replace this simulated delay with a real fetch call
-       * to the /api/users endpoint (or a future /api/auth/login).
-       */
-      await new Promise((resolve) => setTimeout(resolve, 1500));
+      const res = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: email.trim(), password }),
+      });
 
-      // eslint-disable-next-line no-console
-      console.log("Login submitted:", { email });
-    } catch {
-      /* Placeholder — surface API errors to the user here */
+      const data = await res.json().catch(() => ({}));
+
+      if (!res.ok) {
+        setErrors((prev) => ({
+          ...prev,
+          email: data.error || "Login failed",
+          password: "",
+        }));
+        return;
+      }
+
+      /* Store token and user for subsequent authenticated requests */
+      if (data.token) {
+        localStorage.setItem("vantage_token", data.token);
+      }
+      if (data.user) {
+        localStorage.setItem("vantage_user", JSON.stringify(data.user));
+      }
+
+      /* Redirect to home or dashboard once routing supports it */
+      window.location.href = "/";
+    } catch (err) {
+      setErrors((prev) => ({
+        ...prev,
+        email: "Unable to connect. Please try again.",
+        password: "",
+      }));
     } finally {
       setLoading(false);
     }
