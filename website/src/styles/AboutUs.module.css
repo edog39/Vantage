@@ -1,0 +1,149 @@
+/**
+ * AboutUs.module.css
+ *
+ * Styles for the About Us / founder spotlight section.
+ * Centers a single profile card with avatar, bio, and
+ * LinkedIn link against the dark theme.
+ */
+
+/* ── Section layout ── */
+.section {
+  padding: var(--section-padding);
+  padding-left: 24px;
+  padding-right: 24px;
+  text-align: center;
+  position: relative;
+}
+
+/* Subtle top divider line */
+.section::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--border), transparent);
+}
+
+/* ── Header ── */
+.header {
+  max-width: 600px;
+  margin: 0 auto 48px;
+}
+
+/* ── Card wrapper (centers card) ── */
+.cardWrapper {
+  display: flex;
+  justify-content: center;
+}
+
+/* ── Profile card (clickable link to LinkedIn) ── */
+.card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  padding: 48px 40px;
+  max-width: 400px;
+  width: 100%;
+  cursor: pointer;
+  color: inherit;
+  text-decoration: none;
+  transition: border-color var(--transition-base),
+              box-shadow var(--transition-base),
+              transform var(--transition-base);
+}
+
+.card:hover {
+  border-color: var(--accent);
+  box-shadow: var(--shadow-glow);
+  transform: translateY(-4px);
+}
+
+/* ── Avatar circle with initials ── */
+.avatar {
+  width: 88px;
+  height: 88px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--accent), var(--accent-light));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 24px rgba(99, 102, 241, 0.3);
+}
+
+.initials {
+  font-size: 28px;
+  font-weight: 800;
+  color: #fff;
+  letter-spacing: 1px;
+}
+
+/* ── Text ── */
+.name {
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.3px;
+}
+
+.role {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--accent-light);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.bio {
+  font-size: 14px;
+  color: var(--text-secondary);
+  line-height: 1.7;
+  max-width: 320px;
+}
+
+/* ── LinkedIn button ── */
+.linkedin {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+  padding: 10px 24px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #fff;
+  background: #0a66c2;
+  border-radius: var(--radius-full);
+  transition: background var(--transition-fast),
+              transform var(--transition-fast),
+              box-shadow var(--transition-fast);
+}
+
+.linkedin:hover {
+  background: #0077b5;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(10, 102, 194, 0.4);
+}
+
+.linkedinIcon {
+  font-size: 18px;
+}
+
+/* ── Responsive ── */
+@media (max-width: 480px) {
+  .card {
+    padding: 36px 24px;
+  }
+
+  .avatar {
+    width: 72px;
+    height: 72px;
+  }
+
+  .initials {
+    font-size: 22px;
+  }
+}

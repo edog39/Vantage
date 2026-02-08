@@ -1,0 +1,120 @@
+/**
+ * LogoCarousel.module.css
+ *
+ * Infinite horizontal scrolling logo carousel with two rows
+ * scrolling in opposite directions. Uses pure CSS animation.
+ * The carousel never pauses — it scrolls continuously.
+ * Individual logos brighten and colorize on hover.
+ */
+
+.section {
+  padding: 60px 0;
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-secondary);
+  overflow: hidden;
+}
+
+.label {
+  text-align: center;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  margin-bottom: 32px;
+}
+
+/* ══════════════════════════════════════
+   Track (single scrolling row)
+   ══════════════════════════════════════ */
+.track {
+  display: flex;
+  width: max-content;
+  gap: 52px;
+  padding: 14px 0;
+}
+
+.trackForward {
+  animation: scrollForward 35s linear infinite;
+}
+
+.trackReverse {
+  animation: scrollReverse 35s linear infinite;
+  margin-top: 10px;
+}
+
+/* Keyframes for seamless infinite loop.
+   translateX(-50%) works because the logo set is duplicated. */
+@keyframes scrollForward {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+@keyframes scrollReverse {
+  0%   { transform: translateX(-50%); }
+  100% { transform: translateX(0); }
+}
+
+/* ══════════════════════════════════════
+   Individual Logo Item
+   ══════════════════════════════════════ */
+.logoItem {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 160px;
+  height: 44px;
+  opacity: 0.4;
+  filter: grayscale(100%) brightness(1.5);
+  transition:
+    opacity 0.35s ease,
+    filter 0.35s ease;
+  user-select: none;
+  flex-shrink: 0;
+}
+
+.logoItem:hover {
+  opacity: 1;
+  filter: grayscale(0%) brightness(1);
+}
+
+/* ── Brand icon (from react-icons) ── */
+.logoIcon {
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+  color: var(--text-primary);
+}
+
+/* ── Company name text ── */
+.logoText {
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: -0.3px;
+  white-space: nowrap;
+  color: var(--text-primary);
+}
+
+/* ══════════════════════════════════════
+   Responsive
+   ══════════════════════════════════════ */
+@media (max-width: 640px) {
+  .track {
+    gap: 36px;
+  }
+
+  .logoItem {
+    min-width: 130px;
+    gap: 8px;
+  }
+
+  .logoIcon {
+    width: 20px;
+    height: 20px;
+  }
+
+  .logoText {
+    font-size: 15px;
+  }
+}

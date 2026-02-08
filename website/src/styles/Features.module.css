@@ -1,0 +1,1237 @@
+/**
+ * Features.module.css
+ *
+ * Immersive scroll-driven features section. Each feature lives in a
+ * tall scroll zone (200vh) with a sticky frame that pins content to
+ * the viewport. Elements progressively reveal at scroll thresholds.
+ *
+ * Includes styles for: section header, scroll zones, sticky frames,
+ * ambient glows, progress bars, content layouts, floating side nav,
+ * visual cards, and responsive breakpoints.
+ *
+ * IMPORTANT: No `overflow: hidden` on .section or .scrollZone —
+ * that would break `position: sticky` on descendant elements.
+ */
+
+/* ══════════════════════════════════════
+   Section Wrapper
+   No overflow clipping — required for sticky to work.
+   ══════════════════════════════════════ */
+.section {
+  position: relative;
+}
+
+/* ══════════════════════════════════════
+   Section Header
+   Hero-style header that sets the pace for the page.
+   Centered text with a scroll hint at the bottom.
+   ══════════════════════════════════════ */
+.header {
+  min-height: 75vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 120px 24px 40px;
+  position: relative;
+}
+
+.headerLabel {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--accent);
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  margin-bottom: 16px;
+}
+
+.headerTitle {
+  font-size: clamp(32px, 5vw, 52px);
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  line-height: 1.15;
+  color: var(--text-primary);
+  margin-bottom: 20px;
+  max-width: 700px;
+}
+
+.headerSubtitle {
+  font-size: clamp(15px, 2vw, 18px);
+  color: var(--text-secondary);
+  max-width: 560px;
+  line-height: 1.7;
+  margin-bottom: 48px;
+}
+
+/* ── Scroll hint — bouncing arrow below the subtitle ── */
+.scrollHint {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-muted);
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+}
+
+.scrollArrow {
+  animation: bounceDown 2s ease-in-out infinite;
+}
+
+@keyframes bounceDown {
+  0%, 100% {
+    transform: translateY(0);
+    opacity: 0.6;
+  }
+  50% {
+    transform: translateY(8px);
+    opacity: 1;
+  }
+}
+
+/* ══════════════════════════════════════
+   Scroll Zone
+   Each feature occupies 200vh — creating 100vh of pinned
+   scroll travel. The extra height is what makes each feature
+   require significant scrolling before the next one appears.
+   ══════════════════════════════════════ */
+.scrollZone {
+  height: 200vh;
+  position: relative;
+}
+
+/* ══════════════════════════════════════
+   Sticky Frame
+   Pins to the viewport at top: 0 for the duration of the
+   scroll zone. All feature content lives inside this frame.
+   overflow: hidden clips the ambient glow without breaking
+   sticky (overflow on the sticky element itself is fine).
+   ══════════════════════════════════════ */
+.stickyFrame {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 80px;
+  overflow: hidden;
+}
+
+/* ══════════════════════════════════════
+   Ambient Background Glow
+   Large blurred ellipse behind the content. Color and opacity
+   are driven by inline styles per feature.
+   ══════════════════════════════════════ */
+.ambientGlow {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  transition: opacity 0.3s ease;
+}
+
+/* ══════════════════════════════════════
+   Feature Progress Bar
+   Thin line at the very top of the sticky frame. Width
+   fills from 0→100% as the user scrolls through the zone.
+   ══════════════════════════════════════ */
+.featureProgressBar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: rgba(255, 255, 255, 0.04);
+  z-index: 5;
+}
+
+.featureProgressFill {
+  height: 100%;
+  border-radius: 0 1px 1px 0;
+  transition: width 0.08s linear;
+  box-shadow: 0 0 12px rgba(99, 102, 241, 0.3);
+}
+
+/* ══════════════════════════════════════
+   Content Layout — Two-column grid
+   Text on one side, visual on the other. Alternates
+   via the .contentReversed modifier.
+   ══════════════════════════════════════ */
+.contentLayout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 80px;
+  max-width: 1100px;
+  width: 100%;
+  align-items: center;
+  position: relative;
+  z-index: 1;
+}
+
+/* Reversed layout: visual on left, text on right */
+.contentReversed .textBlock {
+  order: 2;
+  text-align: right;
+}
+
+.contentReversed .visualBlock {
+  order: 1;
+}
+
+.contentReversed .featureHighlights {
+  align-items: flex-end;
+}
+
+/* ══════════════════════════════════════
+   Text Block (content side)
+   ══════════════════════════════════════ */
+.textBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  /* GPU-accelerated children (inline transforms) */
+  will-change: contents;
+}
+
+.featureNumber {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--accent);
+  letter-spacing: 2px;
+  font-variant-numeric: tabular-nums;
+  margin-bottom: 4px;
+}
+
+.featureTitle {
+  font-size: clamp(26px, 3.5vw, 38px);
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  line-height: 1.15;
+  color: var(--text-primary);
+}
+
+.featureSubtitle {
+  font-size: 16px;
+  color: var(--accent-light);
+  font-weight: 500;
+  margin-bottom: 6px;
+}
+
+.featureDesc {
+  font-size: 16px;
+  color: var(--text-secondary);
+  line-height: 1.8;
+  margin-bottom: 20px;
+  max-width: 480px;
+}
+
+/* Right-aligned text on reversed sections needs right-aligned desc */
+.contentReversed .featureDesc {
+  margin-left: auto;
+}
+
+/* ── Highlight bullet points ── */
+.featureHighlights {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.highlightItem {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  /* GPU-accelerated inline transforms */
+  will-change: transform, opacity;
+}
+
+.highlightDot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  box-shadow: 0 0 6px rgba(99, 102, 241, 0.3);
+}
+
+/* ══════════════════════════════════════
+   Visual Block (illustration side)
+   Outer wrapper receives scroll-driven transforms.
+   Inner card handles hover effects independently.
+   ══════════════════════════════════════ */
+.visualBlock {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* GPU-accelerated inline transforms */
+  will-change: transform, opacity;
+}
+
+.visualCard {
+  width: 100%;
+  max-width: 380px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 32px;
+  transition:
+    border-color 0.4s ease,
+    box-shadow 0.4s ease,
+    transform 0.3s ease;
+}
+
+/* Hover effect on the inner card — doesn't conflict with
+   scroll-driven transforms on the outer .visualBlock */
+.visualCard:hover {
+  border-color: rgba(99, 102, 241, 0.25);
+  box-shadow:
+    0 12px 48px -12px rgba(99, 102, 241, 0.12),
+    0 0 0 1px rgba(99, 102, 241, 0.08);
+  transform: translateY(-4px);
+}
+
+/* SVG visual inside the card */
+.visual {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* ══════════════════════════════════════
+   Floating Side Navigation
+   Fixed on the right edge, vertically centered.
+   Dots indicate features; active dot is highlighted.
+   Labels slide in from the right on hover.
+   ══════════════════════════════════════ */
+.floatingNav {
+  position: fixed;
+  right: 28px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  z-index: 100;
+  /* Hidden by default, revealed when section is in view */
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.5s ease;
+}
+
+.floatingNavVisible {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* Individual nav dot button */
+.navDot {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 4px;
+  cursor: pointer;
+  background: none;
+  border: none;
+}
+
+/* The actual dot circle */
+.navDotInner {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--text-muted);
+  opacity: 0.3;
+  transition:
+    width 0.3s ease,
+    height 0.3s ease,
+    opacity 0.3s ease,
+    background 0.3s ease,
+    box-shadow 0.3s ease;
+  flex-shrink: 0;
+}
+
+/* Active dot — larger, glowing */
+.navDotActive .navDotInner {
+  width: 12px;
+  height: 12px;
+  background: var(--accent);
+  opacity: 1;
+  box-shadow:
+    0 0 8px rgba(99, 102, 241, 0.4),
+    0 0 20px rgba(99, 102, 241, 0.15);
+}
+
+/* Hover on any dot makes it brighter */
+.navDot:hover .navDotInner {
+  opacity: 0.7;
+}
+
+.navDotActive:hover .navDotInner {
+  opacity: 1;
+}
+
+/* Feature label — hidden by default, slides in on hover */
+.navLabel {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  opacity: 0;
+  transform: translateX(8px);
+  transition:
+    opacity 0.25s ease,
+    transform 0.25s ease;
+  pointer-events: none;
+}
+
+.navDot:hover .navLabel {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.navDotActive .navLabel {
+  color: var(--accent-light);
+}
+
+/* ══════════════════════════════════════
+   Interactive Visual: Task Engine
+   Mini task list with animated checkboxes
+   that check off as the user scrolls.
+   ══════════════════════════════════════ */
+
+/* Wrapper for the entire task engine visual */
+.itEngine {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  font-family: inherit;
+}
+
+/* Header row: "Task Queue" label + "2/3" count */
+.itHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 12px;
+  margin-bottom: 10px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.itHeaderLabel {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+  color: var(--text-secondary);
+}
+
+.itHeaderCount {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--accent);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Individual task row */
+.itTask {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  transition: background 0.3s ease, opacity 0.4s ease;
+}
+
+.itTask:hover {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+/* Completed task: dimmed with strikethrough */
+.itTaskDone {
+  opacity: 0.5;
+}
+
+.itTaskDone .itTaskText {
+  text-decoration: line-through;
+  text-decoration-color: rgba(255, 255, 255, 0.3);
+}
+
+/* Checkbox square — 18×18px rounded square */
+.itCheckbox {
+  width: 18px;
+  height: 18px;
+  border-radius: 5px;
+  border: 1.5px solid rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.04);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: border-color 0.3s ease, background 0.3s ease,
+    box-shadow 0.3s ease;
+}
+
+/* Checkbox checked state — green with glow */
+.itCheckboxDone {
+  border-color: #10b981;
+  background: rgba(16, 185, 129, 0.12);
+  box-shadow: 0 0 8px rgba(16, 185, 129, 0.2);
+}
+
+/* Checkmark SVG icon */
+.itCheckmark {
+  width: 14px;
+  height: 14px;
+  color: #10b981;
+}
+
+/* Task label text */
+.itTaskText {
+  flex: 1;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-primary);
+  transition: color 0.3s ease;
+}
+
+/* Category tag pill (e.g. "Sales") */
+.itTag {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  color: var(--accent);
+  background: rgba(99, 102, 241, 0.1);
+  padding: 3px 8px;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+
+/* Chain section: follow-up generated indicator + new task */
+.itChain {
+  margin-top: 6px;
+}
+
+/* "Follow-up generated" label bar */
+.itChainBar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 500;
+  color: #10b981;
+  opacity: 0.8;
+}
+
+.itChainBar svg {
+  opacity: 0.6;
+}
+
+/* Newly spawned task — dashed border with subtle glow */
+.itTaskNew {
+  border: 1px dashed rgba(99, 102, 241, 0.25);
+  background: rgba(99, 102, 241, 0.04);
+}
+
+/* Cross-category tag variant — green for Ops to contrast Sales purple */
+.itTagOps {
+  color: #10b981;
+  background: rgba(16, 185, 129, 0.1);
+}
+
+/* ══════════════════════════════════════
+   Interactive Visual: Priority Intelligence
+   Cards with priority bars that reorder
+   via CSS transforms as the user scrolls.
+   ══════════════════════════════════════ */
+
+/* Wrapper for priority list */
+.ipList {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  font-family: inherit;
+}
+
+/* Header row: "Priority Queue" + "Ranked" status */
+.ipHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 12px;
+  margin-bottom: 10px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.ipHeaderLabel {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+  color: var(--text-secondary);
+}
+
+.ipHeaderStatus {
+  font-size: 12px;
+  font-weight: 600;
+  color: #34d399;
+  letter-spacing: 0.5px;
+  transition: opacity 0.3s ease;
+}
+
+/* Container for the 3 priority cards — gap must match ITEM_HEIGHT in JSX */
+.ipCards {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* Individual priority card — fixed height for predictable translateY offsets */
+.ipCard {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 12px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  position: relative;
+  height: 58px;
+  box-sizing: border-box;
+  /* transform & transition set via inline styles */
+}
+
+/* Color-coded left edge bar */
+.ipBar {
+  width: 3px;
+  height: 28px;
+  border-radius: 2px;
+  flex-shrink: 0;
+  opacity: 0.9;
+}
+
+/* Card text content: label + deadline */
+.ipContent {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.ipLabel {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ipMeta {
+  font-size: 12px;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Category tag inside the priority meta row */
+.ipMetaTag {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  color: var(--text-secondary);
+  background: rgba(255, 255, 255, 0.08);
+  padding: 2px 6px;
+  border-radius: 3px;
+}
+
+/* Priority score bar track */
+.ipScoreTrack {
+  width: 40px;
+  height: 4px;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.06);
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+/* Score bar fill — width driven by inline styles */
+.ipScoreFill {
+  height: 100%;
+  border-radius: 2px;
+  transition: width 0.15s linear;
+  opacity: 0.85;
+}
+
+/* Circular priority badge (shows rank number) */
+.ipBadge {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 1.5px solid;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 700;
+  flex-shrink: 0;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+/* ══════════════════════════════════════
+   Interactive Visual: Workflow Coverage
+   2×4 grid of category pills that light
+   up sequentially as the user scrolls.
+   ══════════════════════════════════════ */
+
+/* Wrapper for the category grid visual */
+.icGrid {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  font-family: inherit;
+}
+
+/* Header row: "Coverage" + "5/8" count */
+.icHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 10px;
+  margin-bottom: 8px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.icHeaderLabel {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+  color: var(--text-secondary);
+}
+
+.icHeaderCount {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--accent);
+  font-variant-numeric: tabular-nums;
+}
+
+/* 2×4 grid of category nodes — tight gap so all 8 fit in the card */
+.icNodes {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+}
+
+/* Individual category card with dot, label, and task preview */
+.icNode {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 8px 10px;
+  border-radius: 7px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.02);
+  transition: border-color 0.4s ease, box-shadow 0.4s ease,
+    opacity 0.4s ease, background 0.3s ease;
+  cursor: default;
+  overflow: hidden;
+}
+
+/* Hover effect brightens inactive pills */
+.icNode:hover {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+/* Lit/active state — border and glow set via inline styles */
+.icNodeLit {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+/* Category header row: dot + label */
+.icNodeHeader {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Small colored indicator dot */
+.icDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  transition: opacity 0.4s ease;
+}
+
+/* Category name label — bright enough to read at a glance */
+.icLabel {
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.2px;
+  color: var(--text-primary);
+  transition: color 0.4s ease;
+}
+
+/* Sample task name beneath the category label */
+.icTask {
+  font-size: 11px;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: opacity 0.4s ease;
+  padding-left: 12px;
+  line-height: 1.3;
+}
+
+/* ══════════════════════════════════════
+   Interactive Visual: Real-Time Analytics
+   Mini dashboard with growing bar chart
+   and ticking stat counters.
+   ══════════════════════════════════════ */
+
+/* Wrapper styled as a mini window */
+.iaChart {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  font-family: inherit;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 10px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.02);
+}
+
+/* macOS-style title bar with traffic light dots */
+.iaTitleBar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 14px;
+  background: rgba(255, 255, 255, 0.03);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+/* Traffic light dot */
+.iaDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  opacity: 0.5;
+}
+
+/* "Weekly Performance" text in title bar */
+.iaTitleText {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  margin-left: 8px;
+}
+
+/* Bar chart container — row of bar columns */
+.iaBars {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  padding: 20px 16px 8px;
+  height: 120px;
+}
+
+/* Single bar column (track + label) */
+.iaBarCol {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  height: 100%;
+}
+
+/* Floating count label above each bar */
+.iaBarCount {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-primary);
+  font-variant-numeric: tabular-nums;
+  transition: opacity 0.3s ease;
+  min-height: 14px;
+}
+
+/* Bar track (full height container) */
+.iaBarTrack {
+  flex: 1;
+  width: 100%;
+  display: flex;
+  align-items: flex-end;
+  border-radius: 4px 4px 0 0;
+  overflow: hidden;
+}
+
+/* Bar fill — height driven by inline styles */
+.iaBarFill {
+  width: 100%;
+  border-radius: 4px 4px 0 0;
+  opacity: 0.75;
+  transition: height 0.3s ease-out;
+}
+
+/* Category label below each bar */
+.iaBarLabel {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+/* Stats row below the chart */
+.iaStats {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  padding: 12px 16px 14px;
+  border-top: 1px solid rgba(255, 255, 255, 0.04);
+  transition: opacity 0.4s ease;
+}
+
+/* Individual stat group (number + label) */
+.iaStat {
+  display: flex;
+  align-items: baseline;
+  gap: 5px;
+}
+
+/* Stat number value */
+.iaStatValue {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--accent);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Stat label text */
+.iaStatLabel {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+/* Vertical divider between stats */
+.iaStatDivider {
+  width: 1px;
+  height: 20px;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+/* ══════════════════════════════════════
+   Interactive Visual: Built to Scale
+   Hub-and-spoke with central V node and
+   4 satellite integration nodes that
+   connect as the user scrolls.
+   ══════════════════════════════════════ */
+
+/* Wrapper for the hub visual */
+.isHub {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  font-family: inherit;
+}
+
+/* Header row: "Integrations" + "3 active" */
+.isHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 12px;
+  margin-bottom: 14px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.isHeaderLabel {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+  color: var(--text-secondary);
+}
+
+.isHeaderCount {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--accent);
+}
+
+/* Spoke layout: center hub + 2×2 grid of satellites */
+.isSpoke {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  grid-template-rows: 1fr 1fr;
+  gap: 10px;
+  align-items: center;
+  justify-items: center;
+  min-height: 140px;
+}
+
+/* Central Vantage hub node */
+.isCenter {
+  grid-column: 2;
+  grid-row: 1 / 3;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: rgba(99, 102, 241, 0.12);
+  border: 2px solid rgba(99, 102, 241, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 20px rgba(99, 102, 241, 0.15);
+}
+
+/* "V" letter inside the hub */
+.isCenterV {
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--accent);
+  opacity: 0.9;
+}
+
+/* Satellite integration node */
+.isNode {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.02);
+  position: relative;
+  transition: border-color 0.4s ease, box-shadow 0.4s ease,
+    background 0.3s ease;
+  width: 100%;
+}
+
+/* Active/connected satellite — border & glow set via inline styles */
+.isNodeActive {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+/* Connection line indicator (thin bar on the hub-facing side) */
+.isLine {
+  position: absolute;
+  width: 3px;
+  height: 100%;
+  top: 0;
+  border-radius: 2px;
+  transition: opacity 0.4s ease;
+}
+
+/* Nodes on the left get the line on the right edge, and vice versa */
+.isNode:nth-child(2) .isLine,
+.isNode:nth-child(3) .isLine {
+  right: -6px;
+}
+
+.isNode:nth-child(4) .isLine,
+.isNode:nth-child(5) .isLine {
+  left: -6px;
+}
+
+/* Node content wrapper: label + description stacked */
+.isNodeContent {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+}
+
+/* Node integration label (platform name) — bright and readable */
+.isNodeLabel {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+  transition: color 0.4s ease;
+}
+
+/* Sync description beneath the platform name */
+.isNodeDesc {
+  font-size: 12px;
+  color: var(--text-secondary);
+  transition: opacity 0.4s ease;
+}
+
+/* Green "active" indicator dot */
+.isActiveDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #10b981;
+  box-shadow: 0 0 6px rgba(16, 185, 129, 0.4);
+  transition: opacity 0.3s ease;
+}
+
+/* ══════════════════════════════════════
+   Responsive — Tablets (≤ 960px)
+   Reduce gaps, padding, and visual sizing.
+   ══════════════════════════════════════ */
+@media (max-width: 960px) {
+  .stickyFrame {
+    padding: 0 48px;
+  }
+
+  .contentLayout {
+    gap: 48px;
+  }
+
+  .featureTitle {
+    font-size: clamp(22px, 3vw, 30px);
+  }
+
+  .visualCard {
+    max-width: 300px;
+    padding: 24px;
+  }
+
+  .floatingNav {
+    right: 16px;
+    gap: 12px;
+  }
+
+  /* Hide labels on smaller screens — dots only */
+  .navLabel {
+    display: none;
+  }
+}
+
+/* ══════════════════════════════════════
+   Responsive — Mobile (≤ 768px)
+   Single column layout. Reduced scroll zone height.
+   Floating nav hidden. Visual below text.
+   ══════════════════════════════════════ */
+@media (max-width: 768px) {
+  .header {
+    min-height: 60vh;
+    padding: 100px 20px 32px;
+  }
+
+  .headerTitle {
+    font-size: clamp(26px, 6vw, 36px);
+  }
+
+  /* Shorter scroll zones on mobile (less scrolling needed) */
+  .scrollZone {
+    height: 160vh;
+  }
+
+  .stickyFrame {
+    padding: 0 20px;
+    align-items: flex-start;
+    padding-top: 80px;
+  }
+
+  /* Stack columns vertically on mobile */
+  .contentLayout {
+    grid-template-columns: 1fr;
+    gap: 32px;
+    max-width: 100%;
+  }
+
+  /* Reset reversed ordering on mobile — always text first */
+  .contentReversed .textBlock {
+    order: unset;
+    text-align: left;
+  }
+
+  .contentReversed .visualBlock {
+    order: unset;
+  }
+
+  .contentReversed .featureHighlights {
+    align-items: flex-start;
+  }
+
+  .contentReversed .featureDesc {
+    margin-left: 0;
+  }
+
+  .featureDesc {
+    max-width: 100%;
+  }
+
+  /* Hide the floating nav on mobile */
+  .floatingNav {
+    display: none;
+  }
+
+  .visualCard {
+    max-width: 280px;
+    padding: 20px;
+  }
+
+  /* Smaller text in interactive visuals on mobile */
+  .itTaskText,
+  .ipLabel,
+  .icLabel,
+  .isNodeLabel {
+    font-size: 12px;
+  }
+
+  .iaChart {
+    border: none;
+  }
+
+  .iaBars {
+    height: 90px;
+    padding: 16px 12px 6px;
+  }
+}
+
+/* ══════════════════════════════════════
+   Responsive — Small phones (≤ 480px)
+   Further reduce sizing and hide visual cards.
+   ══════════════════════════════════════ */
+@media (max-width: 480px) {
+  .header {
+    min-height: 50vh;
+    padding: 80px 16px 24px;
+  }
+
+  .headerSubtitle {
+    margin-bottom: 32px;
+  }
+
+  .scrollZone {
+    height: 140vh;
+  }
+
+  .stickyFrame {
+    padding: 0 16px;
+    padding-top: 60px;
+  }
+
+  .contentLayout {
+    gap: 24px;
+  }
+
+  .featureTitle {
+    font-size: clamp(20px, 5vw, 26px);
+  }
+
+  .featureDesc {
+    font-size: 14px;
+  }
+
+  /* Hide visual cards on very small screens */
+  .visualBlock {
+    display: none;
+  }
+}

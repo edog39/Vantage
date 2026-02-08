@@ -1,0 +1,257 @@
+/**
+ * Pricing.module.css
+ *
+ * Styles for the three-tier pricing section. The middle card
+ * (Pro / "popular") is visually elevated with a gradient border,
+ * glow shadow, and accent badge. Cards are responsive and
+ * collapse to a single column on smaller screens.
+ */
+
+.section {
+  padding: var(--section-padding);
+  position: relative;
+}
+
+/* Subtle radial glow behind the pricing grid */
+.section::before {
+  content: "";
+  position: absolute;
+  top: 40%;
+  left: 50%;
+  width: 700px;
+  height: 500px;
+  transform: translate(-50%, -50%);
+  background: radial-gradient(ellipse, rgba(99, 102, 241, 0.06) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.header {
+  text-align: center;
+  margin-bottom: 60px;
+}
+
+.header .subtitle {
+  margin: 0 auto;
+}
+
+/* ══════════════════════════════════════
+   Pricing Grid — 3-column layout
+   ══════════════════════════════════════ */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+  max-width: 1060px;
+  margin: 0 auto;
+  padding: 0 24px;
+  align-items: start;
+}
+
+/* ══════════════════════════════════════
+   Individual Pricing Card
+   ══════════════════════════════════════ */
+.card {
+  position: relative;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 36px 28px 32px;
+  display: flex;
+  flex-direction: column;
+  transition:
+    transform 0.4s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.4s cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 0.4s ease;
+}
+
+.card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-md);
+}
+
+/* ── Popular / Highlighted Card ── */
+.cardPopular {
+  border-color: rgba(99, 102, 241, 0.45);
+  background: linear-gradient(
+    168deg,
+    rgba(99, 102, 241, 0.08) 0%,
+    var(--bg-card) 40%,
+    var(--bg-card) 100%
+  );
+  box-shadow:
+    0 0 60px -15px rgba(99, 102, 241, 0.2),
+    0 0 0 1px rgba(99, 102, 241, 0.1);
+  /* Lift popular card slightly above siblings */
+  transform: scale(1.03);
+  z-index: 2;
+}
+
+.cardPopular:hover {
+  transform: scale(1.03) translateY(-4px);
+  box-shadow:
+    0 20px 60px -15px rgba(99, 102, 241, 0.25),
+    0 0 0 1px rgba(99, 102, 241, 0.15);
+}
+
+/* ── "Most Popular" badge ── */
+.badge {
+  position: absolute;
+  top: -13px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: linear-gradient(135deg, var(--accent), var(--accent-light));
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  padding: 5px 18px;
+  border-radius: var(--radius-full);
+  box-shadow: 0 4px 14px rgba(99, 102, 241, 0.35);
+  white-space: nowrap;
+}
+
+/* ── Plan name ── */
+.planName {
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: -0.2px;
+  margin-bottom: 16px;
+  color: var(--text-primary);
+}
+
+/* ── Price block ── */
+.priceWrap {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.price {
+  font-size: 44px;
+  font-weight: 800;
+  letter-spacing: -1.5px;
+  line-height: 1;
+  color: var(--text-primary);
+}
+
+.period {
+  font-size: 14px;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+/* ── Description ── */
+.planDesc {
+  font-size: 14px;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  margin-bottom: 24px;
+}
+
+/* ── Divider ── */
+.divider {
+  height: 1px;
+  background: var(--border);
+  margin-bottom: 24px;
+}
+
+/* ══════════════════════════════════════
+   Feature Checklist
+   ══════════════════════════════════════ */
+.featureList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 32px;
+  flex: 1; /* Push CTA button to bottom */
+}
+
+.featureItem {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+  color: var(--text-secondary);
+  line-height: 1.4;
+}
+
+.checkIcon {
+  flex-shrink: 0;
+}
+
+/* ══════════════════════════════════════
+   CTA Buttons
+   ══════════════════════════════════════ */
+.ctaBtn {
+  display: block;
+  width: 100%;
+  text-align: center;
+  padding: 13px 0;
+  font-size: 14px;
+  font-weight: 600;
+  border-radius: var(--radius-md);
+  transition:
+    background 0.25s ease,
+    box-shadow 0.25s ease,
+    border-color 0.25s ease,
+    transform 0.25s ease;
+}
+
+/* Primary CTA — popular card */
+.ctaPrimary {
+  background: var(--accent);
+  color: #fff;
+  box-shadow: 0 2px 12px rgba(99, 102, 241, 0.3);
+}
+
+.ctaPrimary:hover {
+  background: var(--accent-hover);
+  box-shadow: 0 6px 24px rgba(99, 102, 241, 0.4);
+  transform: translateY(-1px);
+}
+
+/* Secondary CTA — non-popular cards */
+.ctaSecondary {
+  background: transparent;
+  color: var(--text-primary);
+  border: 1px solid var(--border);
+}
+
+.ctaSecondary:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: rgba(99, 102, 241, 0.05);
+  transform: translateY(-1px);
+}
+
+/* ══════════════════════════════════════
+   Responsive
+   ══════════════════════════════════════ */
+@media (max-width: 900px) {
+  .grid {
+    grid-template-columns: 1fr;
+    max-width: 420px;
+    gap: 28px;
+  }
+
+  /* Reset scale on popular card in single column */
+  .cardPopular {
+    transform: none;
+  }
+
+  .cardPopular:hover {
+    transform: translateY(-4px);
+  }
+}
+
+@media (max-width: 480px) {
+  .card {
+    padding: 28px 20px 24px;
+  }
+
+  .price {
+    font-size: 36px;
+  }
+}

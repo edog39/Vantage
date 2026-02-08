@@ -1,0 +1,54 @@
+/**
+ * CallToAction.module.css
+ *
+ * Styles for the full-width gradient CTA banner
+ * near the bottom of the landing page.
+ */
+
+.section {
+  position: relative;
+  padding: 80px 24px;
+  text-align: center;
+  overflow: hidden;
+}
+
+/* ── Gradient background ── */
+.section::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.12) 0%, rgba(167, 139, 250, 0.06) 50%, transparent 100%);
+  pointer-events: none;
+}
+
+.section::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--accent), transparent);
+  opacity: 0.3;
+}
+
+.content {
+  position: relative;
+  z-index: 1;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.headline {
+  font-size: clamp(24px, 4vw, 36px);
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  margin-bottom: 12px;
+}
+
+.subtext {
+  font-size: 16px;
+  color: var(--text-secondary);
+  margin-bottom: 32px;
+  line-height: 1.6;
+}

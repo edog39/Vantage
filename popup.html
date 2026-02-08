@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<!--
+  popup.html
+  
+  Main popup interface for the Vantage Smart Task Manager.
+  Displays the onboarding wizard, role-specific dashboards
+  (student Canvas view or business task engine), stats, filters, and controls.
+  Loaded when the user clicks the extension icon in the Chrome toolbar.
+-->
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Vantage — Task Manager</title>
+  <link rel="stylesheet" href="popup.css" />
+</head>
+<body>
+
+  <!-- ═══════════════════════════════════════
+       Onboarding Overlay (3-step wizard)
+       ═══════════════════════════════════════ -->
+  <div id="onboarding-overlay" class="hidden">
+    <div class="onboarding-container">
+
+      <!-- Step indicator dots -->
+      <div class="step-indicator">
+        <span class="step-dot active" data-step="1"></span>
+        <span class="step-dot" data-step="2"></span>
+        <span class="step-dot" data-step="3"></span>
+      </div>
+
+      <!-- Back button -->
+      <button id="onboarding-back" class="onboarding-back-btn hidden" title="Go back">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+      </button>
+
+      <!-- ── Step 1: Role Selection ── -->
+      <div id="onboarding-step-1" class="onboarding-step">
+        <div class="onboarding-header">
+          <div class="onboarding-logo">V</div>
+          <h2>Welcome to Vantage</h2>
+          <p class="onboarding-subtitle">Choose your path to get started</p>
+        </div>
+
+        <div class="role-cards">
+          <button class="role-card" id="role-student">
+            <div class="role-icon">
+              <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M22 10v6M2 10l10-5 10 5-10 5z"/>
+                <path d="M6 12v5c0 1.66 2.69 3 6 3s6-1.34 6-3v-5"/>
+              </svg>
+            </div>
+            <h3>I'm a Student</h3>
+            <p>Sync with Canvas LMS to see your real assignments, due dates, and courses.</p>
+          </button>
+
+          <button class="role-card" id="role-business">
+            <div class="role-icon">
+              <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="2" y="7" width="20" height="14" rx="2" ry="2"/>
+                <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>
+              </svg>
+            </div>
+            <h3>I'm a Business Owner</h3>
+            <p>Get an endless stream of business tasks across marketing, sales, ops, and more.</p>
+          </button>
+        </div>
+      </div>
+
+      <!-- ── Step 2: Name Entry ── -->
+      <div id="onboarding-step-2" class="onboarding-step hidden">
+        <div class="onboarding-header">
+          <h2>What's your name?</h2>
+          <p class="onboarding-subtitle">We'll personalize your experience</p>
+        </div>
+
+        <form id="onboarding-name-form" class="onboarding-form">
+          <div class="form-group">
+            <label for="onboarding-name">Your Name</label>
+            <input type="text" id="onboarding-name" placeholder="Enter your name" required autocomplete="off" />
+          </div>
+          <button type="submit" class="btn-primary onboarding-continue">Continue</button>
+        </form>
+      </div>
+
+      <!-- ── Step 3: Canvas Setup (students only) ── -->
+      <div id="onboarding-step-3" class="onboarding-step hidden">
+        <div class="onboarding-header">
+          <h2>Connect to Canvas</h2>
+          <p class="onboarding-subtitle">Enter your school's Canvas URL and API token to sync assignments</p>
+        </div>
+
+        <form id="onboarding-canvas-form" class="onboarding-form">
+          <div class="form-group">
+            <label for="canvas-url">Canvas URL</label>
+            <input type="url" id="canvas-url" placeholder="https://your-school.instructure.com" required />
+            <span class="field-hint">Your school's Canvas website address</span>
+          </div>
+
+          <div class="form-group">
+            <label for="canvas-token">API Token</label>
+            <input type="password" id="canvas-token" placeholder="Paste your Canvas API token" required />
+            <span class="field-hint">
+              <a href="#" id="canvas-token-help" class="hint-link">How do I get a token?</a>
+            </span>
+          </div>
+
+          <button type="button" id="canvas-test-btn" class="btn-secondary canvas-test-btn">Test Connection</button>
+          <div id="canvas-test-status" class="canvas-test-status"></div>
+
+          <button type="submit" id="canvas-finish-btn" class="btn-primary onboarding-continue" disabled>Connect & Finish</button>
+          <a href="#" id="canvas-skip" class="skip-link">Skip for now — I'll set this up later</a>
+        </form>
+
+        <!-- Token help guide (shown on click) -->
+        <div id="canvas-token-tooltip" class="token-guide hidden">
+          <div class="token-guide-header">
+            <h3>How to get your Canvas API token</h3>
+            <button id="token-guide-close" class="token-guide-close" title="Close guide">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+          </div>
+
+          <div class="token-steps">
+            <div class="token-step">
+              <span class="token-step-num">1</span>
+              <div class="token-step-body">
+                <p class="token-step-title">Open Canvas in your browser</p>
+                <p class="token-step-desc">Go to your school's Canvas website and log in with your student account. This is the same URL you entered above.</p>
+              </div>
+            </div>
+
+            <div class="token-step">
+              <span class="token-step-num">2</span>
+              <div class="token-step-body">
+                <p class="token-step-title">Go to Account Settings</p>
+                <p class="token-step-desc">Click your <strong>profile picture</strong> or <strong>avatar</strong> in the far-left sidebar, then select <strong>"Settings"</strong> from the menu.</p>
+              </div>
+            </div>
+
+            <div class="token-step">
+              <span class="token-step-num">3</span>
+              <div class="token-step-body">
+                <p class="token-step-title">Scroll to "Approved Integrations"</p>
+                <p class="token-step-desc">On the Settings page, scroll all the way down until you see the section called <strong>Approved Integrations</strong>.</p>
+              </div>
+            </div>
+
+            <div class="token-step">
+              <span class="token-step-num">4</span>
+              <div class="token-step-body">
+                <p class="token-step-title">Click "+ New Access Token"</p>
+                <p class="token-step-desc">Click the blue <strong>"+ New Access Token"</strong> button. A dialog box will appear asking you for a purpose and expiry date.</p>
+              </div>
+            </div>
+
+            <div class="token-step">
+              <span class="token-step-num">5</span>
+              <div class="token-step-body">
+                <p class="token-step-title">Generate the token</p>
+                <p class="token-step-desc">Type <strong>"Vantage"</strong> as the purpose. Leave the expiry date blank (it will never expire). Then click <strong>"Generate Token"</strong>.</p>
+              </div>
+            </div>
+
+            <div class="token-step">
+              <span class="token-step-num">6</span>
+              <div class="token-step-body">
+                <p class="token-step-title">Copy and paste the token</p>
+                <p class="token-step-desc">Canvas will show your new token <strong>only once</strong>. Copy it immediately, then paste it into the <strong>API Token</strong> field above. If you lose it, you'll need to generate a new one.</p>
+              </div>
+            </div>
+          </div>
+
+          <p class="token-guide-note">Your token is stored locally on your device and is never sent anywhere except your school's Canvas server.</p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════
+       Main App Content (hidden during onboarding)
+       ═══════════════════════════════════════ -->
+  <div id="app-content">
+
+    <!-- ═══ Header ═══ -->
+    <header id="app-header">
+      <div class="header-left">
+        <div class="logo">V</div>
+        <div class="header-text">
+          <h1>Vantage</h1>
+          <p class="tagline" id="header-tagline">The work never ends.</p>
+        </div>
+      </div>
+      <div class="header-right">
+        <button id="btn-settings" class="icon-btn" title="Settings">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        </button>
+        <button id="btn-stats" class="icon-btn" title="View Stats">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="12" width="4" height="9"/><rect x="10" y="8" width="4" height="13"/><rect x="17" y="3" width="4" height="18"/></svg>
+        </button>
+        <button id="btn-add" class="icon-btn" title="Add Custom Task">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- ═══ Student Sync Bar (students only, hidden for business) ═══ -->
+    <section id="student-sync-bar" class="hidden">
+      <div class="sync-info">
+        <span id="sync-user-name" class="sync-user"></span>
+        <span id="sync-time" class="sync-time">Never synced</span>
+      </div>
+      <button id="btn-sync" class="btn-sync" title="Sync with Canvas">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+        Sync
+      </button>
+    </section>
+
+    <!-- ═══ Stats Banner ═══ -->
+    <section id="stats-banner">
+      <div class="stat-card">
+        <span class="stat-value" id="stat-completed">0</span>
+        <span class="stat-label">Completed</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-value" id="stat-pending">0</span>
+        <span class="stat-label">Pending</span>
+      </div>
+      <div class="stat-card" id="stat-spawned-card">
+        <span class="stat-value" id="stat-spawned">0</span>
+        <span class="stat-label">Spawned</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-value" id="stat-streak">0</span>
+        <span class="stat-label">Day Streak</span>
+      </div>
+    </section>
+
+    <!-- ═══ Never-Ending Progress Bar (business mode only) ═══ -->
+    <section id="progress-section">
+      <div class="progress-header">
+        <span id="progress-label">Completed today: 0</span>
+        <span id="progress-infinity">∞ remaining</span>
+      </div>
+      <div class="progress-track">
+        <div class="progress-fill" id="progress-fill"></div>
+        <div class="progress-loop-indicator"></div>
+      </div>
+    </section>
+
+    <!-- ═══ Filters ═══ -->
+    <section id="filter-bar">
+      <div class="filter-pills" id="category-filters">
+        <button class="pill active" data-category="all">All</button>
+        <!-- Category pills injected by JS -->
+      </div>
+      <select id="sort-select" title="Sort tasks">
+        <option value="priority">Priority</option>
+        <option value="dueDate">Due Date</option>
+        <option value="category">Category</option>
+      </select>
+    </section>
+
+    <!-- ═══ Task List ═══ -->
+    <section id="task-list">
+      <!-- Tasks rendered by JS -->
+    </section>
+
+    <!-- ═══ Loading State (for Canvas sync) ═══ -->
+    <section id="loading-state" class="hidden">
+      <div class="loading-spinner"></div>
+      <p>Syncing with Canvas...</p>
+    </section>
+
+    <!-- ═══ Empty State ═══ -->
+    <section id="empty-state" class="hidden">
+      <p>No tasks in this view. But don't worry...</p>
+      <p class="emphasis">More are coming.</p>
+    </section>
+
+    <!-- ═══ Canvas Error State ═══ -->
+    <section id="canvas-error-state" class="hidden">
+      <p class="error-title">Could not sync with Canvas</p>
+      <p id="canvas-error-msg" class="error-msg"></p>
+      <button id="btn-retry-sync" class="btn-secondary">Retry</button>
+    </section>
+
+  </div><!-- /app-content -->
+
+  <!-- ═══ Add Task Modal ═══ -->
+  <div id="modal-overlay" class="hidden">
+    <div id="add-task-modal">
+      <h2>Add Custom Task</h2>
+      <form id="add-task-form">
+        <label for="input-title">Task Title</label>
+        <input type="text" id="input-title" placeholder="What needs to be done?" required />
+
+        <label for="input-category">Category</label>
+        <select id="input-category">
+          <!-- Options injected by JS -->
+        </select>
+
+        <label for="input-priority">Priority</label>
+        <select id="input-priority">
+          <option value="critical">Critical</option>
+          <option value="high">High</option>
+          <option value="medium" selected>Medium</option>
+          <option value="low">Low</option>
+        </select>
+
+        <div class="modal-actions">
+          <button type="button" id="btn-cancel-modal" class="btn-secondary">Cancel</button>
+          <button type="submit" class="btn-primary">Add Task</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ═══ Stats Detail Modal ═══ -->
+  <div id="stats-overlay" class="hidden">
+    <div id="stats-modal">
+      <h2>Your Stats</h2>
+      <div class="stats-detail-grid" id="stats-detail-grid">
+        <!-- Rendered by JS -->
+      </div>
+      <div class="stats-category-breakdown" id="stats-category-breakdown">
+        <!-- Rendered by JS -->
+      </div>
+      <button id="btn-close-stats" class="btn-secondary">Close</button>
+    </div>
+  </div>
+
+  <!-- ═══ Settings Modal ═══ -->
+  <div id="settings-overlay" class="hidden">
+    <div id="settings-modal">
+      <h2>Settings</h2>
+
+      <div class="settings-section">
+        <h3>Profile</h3>
+        <div class="settings-row">
+          <span class="settings-label">Name</span>
+          <span class="settings-value" id="settings-name">—</span>
+        </div>
+        <div class="settings-row">
+          <span class="settings-label">Role</span>
+          <span class="settings-value" id="settings-role">—</span>
+        </div>
+      </div>
+
+      <div class="settings-section" id="settings-canvas-section">
+        <h3>Canvas LMS</h3>
+        <div class="settings-row">
+          <span class="settings-label">URL</span>
+          <span class="settings-value" id="settings-canvas-url">—</span>
+        </div>
+        <div class="settings-row">
+          <span class="settings-label">Status</span>
+          <span class="settings-value" id="settings-canvas-status">—</span>
+        </div>
+      </div>
+
+      <div class="settings-actions">
+        <button id="btn-switch-role" class="btn-danger">Switch Role / Reset</button>
+        <button id="btn-close-settings" class="btn-secondary">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ Spawn Notification ═══ -->
+  <div id="spawn-toast" class="hidden">
+    <span id="spawn-toast-text">+2 new tasks spawned!</span>
+  </div>
+
+  <!-- Scripts — order matters: engine & storage first, then Canvas API, onboarding, popup controller -->
+  <script src="taskEngine.js"></script>
+  <script src="storage.js"></script>
+  <script src="canvasApi.js"></script>
+  <script src="onboarding.js"></script>
+  <script src="popup.js"></script>
+
+</body>
+</html>
