@@ -6,6 +6,7 @@
  * prominent headline and action button.
  */
 
+import { Link } from "react-router-dom";
 import styles from "../styles/CallToAction.module.css";
 
 /**
@@ -23,9 +24,9 @@ export default function CallToAction() {
           Join thousands of businesses using Vantage to stay productive,
           organized, and always one step ahead.
         </p>
-        <a href="#" className="btn-primary">
+        <Link to="/login" className="btn-primary">
           Get Started Free
-        </a>
+        </Link>
       </div>
     </section>
   );

@@ -9,6 +9,7 @@
  * Cards animate in with staggered scroll-reveal effects.
  */
 
+import { Link } from "react-router-dom";
 import useScrollReveal from "../hooks/useScrollReveal";
 import styles from "../styles/Pricing.module.css";
 
@@ -26,6 +27,7 @@ import styles from "../styles/Pricing.module.css";
  * @property {string}   description - One-line plan summary
  * @property {boolean}  popular     - Whether this is the highlighted plan
  * @property {string}   cta         - Button label text
+ * @property {string}   ctaLink     - Route for the CTA button
  * @property {string[]} features    - Checklist of included features
  */
 const PLANS = [
@@ -36,6 +38,7 @@ const PLANS = [
     description: "Everything you need to get organized and start building momentum.",
     popular: false,
     cta: "Get Started",
+    ctaLink: "/login",
     features: [
       "Up to 25 active tasks",
       "3 business categories",
@@ -52,6 +55,7 @@ const PLANS = [
     description: "Unlimited workflows and advanced tools for growing businesses.",
     popular: true,
     cta: "Start Free Trial",
+    ctaLink: "/login",
     features: [
       "Unlimited active tasks",
       "All business categories",
@@ -70,6 +74,7 @@ const PLANS = [
     description: "Dedicated infrastructure and premium support for scaling teams.",
     popular: false,
     cta: "Contact Sales",
+    ctaLink: "/contact",
     features: [
       "Everything in Pro",
       "Unlimited team seats",
@@ -127,11 +132,12 @@ function CheckIcon({ color = "currentColor" }) {
  * @param {string}   props.description - Plan one-liner
  * @param {boolean}  props.popular     - Whether to highlight as recommended
  * @param {string}   props.cta         - CTA button label
+ * @param {string}   props.ctaLink     - Route for the CTA button
  * @param {string[]} props.features    - Feature checklist items
  * @param {number}   props.index       - Card index for stagger delay
  * @returns {JSX.Element} A pricing card element
  */
-function PricingCard({ name, price, period, description, popular, cta, features, index }) {
+function PricingCard({ name, price, period, description, popular, cta, ctaLink, features, index }) {
   const [ref, isRevealed] = useScrollReveal({ threshold: 0.15 });
 
   return (
@@ -173,12 +179,12 @@ function PricingCard({ name, price, period, description, popular, cta, features,
       </ul>
 
       {/* CTA button */}
-      <a
-        href="#cta"
+      <Link
+        to={ctaLink}
         className={`${styles.ctaBtn} ${popular ? styles.ctaPrimary : styles.ctaSecondary}`}
       >
         {cta}
-      </a>
+      </Link>
     </div>
   );
 }

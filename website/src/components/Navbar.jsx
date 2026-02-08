@@ -44,7 +44,7 @@ export default function Navbar() {
         </div>
 
         {/* ── CTA Button ── */}
-        <Link to="/#cta" className={styles.cta}>Get Started</Link>
+        <Link to="/login" className={styles.cta}>Get Started</Link>
 
       </div>
     </nav>

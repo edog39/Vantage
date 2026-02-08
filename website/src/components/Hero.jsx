@@ -7,6 +7,7 @@
  * gradient/grid background effect.
  */
 
+import { Link } from "react-router-dom";
 import styles from "../styles/Hero.module.css";
 
 /**
@@ -39,12 +40,12 @@ export default function Hero() {
 
         {/* ── CTA Buttons ── */}
         <div className={styles.buttons}>
-          <a href="#cta" className="btn-primary">
+          <Link to="/login" className="btn-primary">
             Get Started Free
-          </a>
-          <a href="#services" className="btn-secondary">
+          </Link>
+          <Link to="/#services" className="btn-secondary">
             Explore Services
-          </a>
+          </Link>
         </div>
       </div>
 
