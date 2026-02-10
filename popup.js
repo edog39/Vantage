@@ -75,34 +75,31 @@
 
   /**
    * Bootstraps the extension. Checks for an existing profile:
-   * - If none exists, shows the onboarding wizard.
-   * - If profile exists, routes to the correct dashboard (student or business).
+   * - If none exists, creates a default business profile.
+   * - Always routes to the business dashboard (student mode removed).
    */
   async function init() {
-    // Load profile from storage
+    // Load profile from storage (or create a default business profile)
     profile = await StorageManager.getProfile();
 
-    if (!profile || !profile.onboardingComplete) {
-      // No profile yet — show onboarding wizard
-      // Initialize the OnboardingController with a callback for when it finishes
-      OnboardingController.init(handleOnboardingComplete);
-      OnboardingController.show();
-      $appContent.classList.add("hidden");
-      return;
+    if (!profile) {
+      profile = {
+        name: "User",
+        role: "business",
+        canvasUrl: null,
+        canvasToken: null,
+        onboardingComplete: true,
+        createdAt: new Date().toISOString()
+      };
+      await StorageManager.saveProfile(profile);
     }
 
-    // Profile exists — proceed to the right dashboard
-    userRole = profile.role;
+    // Student mode is no longer supported — force business mode
+    userRole = "business";
     $appContent.classList.remove("hidden");
 
-    // Bind token help toggle for students (in case they open settings later)
-    bindTokenHelpToggle();
-
-    if (userRole === "student") {
-      await initStudentMode();
-    } else {
-      await initBusinessMode();
-    }
+    // Initialize business dashboard only
+    await initBusinessMode();
 
     // Bind shared event listeners (settings, modals, etc.)
     bindSharedEvents();
@@ -875,15 +872,19 @@
 
   /**
    * Handles the "Switch Role / Reset" button in settings.
-   * Clears all data and re-triggers onboarding.
+   * Previously used to switch between student and business roles.
+   * Now simply clears all stored data and reloads the popup in
+   * business-only mode.
    */
   async function handleSwitchRole() {
     // Close settings modal
     $settingsOverlay.classList.add("hidden");
 
-    // Reset everything and show onboarding
-    await OnboardingController.resetProfile();
-    $appContent.classList.add("hidden");
+    // Clear all stored extension data (tasks, stats, prefs, profile, UI state, etc.)
+    await StorageManager.clearAll();
+
+    // Reload the popup so init() runs from a clean slate in business mode
+    location.reload();
   }
 
   /* ══════════════════════════════════════
