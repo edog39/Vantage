@@ -350,13 +350,16 @@ const OnboardingController = (() => {
     const canvasUrl = urlInput ? urlInput.value.trim() : "";
     const token = tokenInput ? tokenInput.value.trim() : "";
 
-    if (!canvasUrl || !token) {
-      showFieldError("canvas-url", "Please enter your Canvas URL");
+    // Only the API token is required to continue from this step.
+    // The Canvas URL is optional and may be left blank.
+    if (!token) {
       showFieldError("canvas-token", "Please enter your API token");
       return;
     }
 
-    finishOnboarding(canvasUrl, token);
+    clearFieldError("canvas-token");
+
+    finishOnboarding(canvasUrl || null, token);
   }
 
   /**

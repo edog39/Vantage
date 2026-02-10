@@ -82,6 +82,26 @@ export default function OnboardingPage() {
   const step = STEPS[stepIdx];
 
   /**
+   * canContinueBusinessStep — Determines whether all required
+   * business step fields have been filled in by the user.
+   *
+   * @returns {boolean} True if all required fields are non-empty
+   */
+  const canContinueBusinessStep =
+    Boolean(businessType) &&
+    Boolean(primaryGoal) &&
+    Boolean(audience) &&
+    Boolean(monthlyVisitors);
+
+  /**
+   * canFinishFocusStep — Determines whether the focus step
+   * has a selection, which is required before finishing.
+   *
+   * @returns {boolean} True if a focus value has been chosen
+   */
+  const canFinishFocusStep = Boolean(focus);
+
+  /**
    * persistDraft — Saves current answers as a draft.
    *
    * @returns {void}
@@ -247,7 +267,12 @@ export default function OnboardingPage() {
 
             <div className={styles.actions}>
               <div />
-              <button type="button" className={styles.primary} onClick={next}>
+              <button
+                type="button"
+                className={styles.primary}
+                onClick={next}
+                disabled={!canContinueBusinessStep}
+              >
                 Continue
               </button>
             </div>
@@ -328,7 +353,12 @@ export default function OnboardingPage() {
               <button type="button" className={styles.secondary} onClick={back}>
                 Back
               </button>
-              <button type="button" className={styles.primary} onClick={finish}>
+              <button
+                type="button"
+                className={styles.primary}
+                onClick={finish}
+                disabled={!canFinishFocusStep}
+              >
                 Generate my plan
               </button>
             </div>
