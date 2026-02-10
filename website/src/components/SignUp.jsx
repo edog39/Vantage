@@ -12,7 +12,7 @@
  */
 
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { FiEye, FiEyeOff } from "react-icons/fi";
 import styles from "../styles/SignUp.module.css";
 
@@ -68,6 +68,8 @@ function validate(values) {
  * @returns {JSX.Element} The sign-up form UI
  */
 export default function SignUp() {
+  const navigate = useNavigate();
+
   /* ── Form state ── */
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -163,7 +165,8 @@ export default function SignUp() {
         localStorage.setItem("vantage_user", JSON.stringify(data.user));
       }
 
-      window.location.href = "/";
+      /* Redirect into the authenticated app area (OnboardingGate decides next screen). */
+      navigate("/app");
     } catch (err) {
       setErrors((prev) => ({
         ...prev,

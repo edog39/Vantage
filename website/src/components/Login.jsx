@@ -12,7 +12,7 @@
  */
 
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { FiEye, FiEyeOff } from "react-icons/fi";
 import styles from "../styles/Login.module.css";
 
@@ -50,6 +50,8 @@ function validate(values) {
  * @returns {JSX.Element} The login form UI
  */
 export default function Login() {
+  const navigate = useNavigate();
+
   /* ── Form state ── */
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -119,8 +121,8 @@ export default function Login() {
         localStorage.setItem("vantage_user", JSON.stringify(data.user));
       }
 
-      /* Redirect to home or dashboard once routing supports it */
-      window.location.href = "/";
+      /* Redirect into the authenticated app area (OnboardingGate decides next screen). */
+      navigate("/app");
     } catch (err) {
       setErrors((prev) => ({
         ...prev,

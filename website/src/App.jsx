@@ -20,6 +20,11 @@ import FeaturesPage from "./pages/FeaturesPage";
 import ContactPage from "./pages/ContactPage";
 import LoginPage from "./pages/LoginPage";
 import SignUpPage from "./pages/SignUpPage";
+import AppLayout from "./components/app/AppLayout";
+import RequireAuth from "./components/app/RequireAuth";
+import OnboardingGate from "./components/app/OnboardingGate";
+import DashboardPage from "./pages/app/DashboardPage";
+import OnboardingPage from "./pages/app/OnboardingPage";
 
 /**
  * ScrollHandler — Watches both the pathname and hash of the
@@ -77,6 +82,26 @@ export default function App() {
         <Route path="/contact" element={<ContactPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/signup" element={<SignUpPage />} />
+
+        {/* App (post-login) routes live under /app so marketing pages stay clean. */}
+        <Route
+          path="/app"
+          element={
+            <RequireAuth>
+              <AppLayout />
+            </RequireAuth>
+          }
+        >
+          <Route
+            index
+            element={
+              <OnboardingGate>
+                <DashboardPage />
+              </OnboardingGate>
+            }
+          />
+          <Route path="onboarding" element={<OnboardingPage />} />
+        </Route>
       </Routes>
     </BrowserRouter>
   );
