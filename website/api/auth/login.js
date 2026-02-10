@@ -82,25 +82,51 @@ export default async function handler(req, res) {
       return res.status(401).json({ error: "Invalid email or password" });
     }
 
-    const match = await bcrypt.compare(password, user.password_hash);
+    let match = false;
+    try {
+      match = await bcrypt.compare(password, user.password_hash);
+    } catch (compareErr) {
+      // Malformed hash or bcrypt error — treat as invalid credentials
+      console.warn("Login bcrypt compare error:", compareErr.message);
+      return res.status(401).json({ error: "Invalid email or password" });
+    }
     if (!match) {
       return res.status(401).json({ error: "Invalid email or password" });
     }
 
     // Issue a fresh access/refresh token pair for this user.
-    const { accessToken, refreshToken } = await issueTokenPair({
-      id: user.id,
-      email: user.email,
-    });
+    let accessToken;
+    let refreshToken;
+    try {
+      const pair = await issueTokenPair({
+        id: user.id,
+        email: user.email,
+      });
+      accessToken = pair.accessToken;
+      refreshToken = pair.refreshToken;
+    } catch (tokenErr) {
+      console.error("Login token issuance failed:", tokenErr);
+      return res.status(503).json({
+        error: "Unable to complete sign-in. Please try again later.",
+      });
+    }
+
+    // Ensure id is JSON-serializable (Neon/Postgres may return non-plain types)
+    const serializableId =
+      user.id != null
+        ? typeof user.id === "string"
+          ? user.id
+          : String(user.id)
+        : null;
 
     // For backward compatibility with any existing clients, also return `token`
     // as an alias of the short-lived access token.
     res.status(200).json({
       user: {
-        id: user.id,
-        email: user.email,
-        name: user.name,
-        role: user.role,
+        id: serializableId,
+        email: user.email ?? null,
+        name: user.name ?? null,
+        role: user.role ?? null,
       },
       accessToken,
       refreshToken,
