@@ -6,14 +6,15 @@
  * to keep task data synchronized via the Neon database.
  *
  * Routes:
- *   GET    /api/tasks?userId=...              — Fetch all tasks for a user
- *   POST   /api/tasks                         — Create a new task
- *   PUT    /api/tasks    { id, ...fields }    — Update an existing task
- *   DELETE /api/tasks?id=...                  — Delete a task by ID
+ *   GET    /api/tasks                         — Fetch all tasks for the authenticated user
+ *   POST   /api/tasks                         — Create a new task for the authenticated user
+ *   PUT    /api/tasks    { id, ...fields }    — Update an existing task owned by the user
+ *   DELETE /api/tasks?id=...                  — Delete a task by ID owned by the user
  */
 
 import { sql } from "./_db.js";
 import { cors } from "./_cors.js";
+import { requireAuth } from "./_auth.js";
 
 /**
  * Main request handler for the /api/tasks endpoint.
@@ -26,11 +27,16 @@ export default async function handler(req, res) {
   if (cors(req, res)) return;
 
   try {
+    const auth = requireAuth(req, res);
+    if (!auth) {
+      return;
+    }
+
     switch (req.method) {
-      case "GET":    return await getTasks(req, res);
-      case "POST":   return await createTask(req, res);
-      case "PUT":    return await updateTask(req, res);
-      case "DELETE": return await deleteTask(req, res);
+      case "GET":    return await getTasks(req, res, auth.userId);
+      case "POST":   return await createTask(req, res, auth.userId);
+      case "PUT":    return await updateTask(req, res, auth.userId);
+      case "DELETE": return await deleteTask(req, res, auth.userId);
       default:       return res.status(405).json({ error: "Method not allowed" });
     }
   } catch (err) {
@@ -40,18 +46,13 @@ export default async function handler(req, res) {
 }
 
 /**
- * Fetches all tasks for a given user, ordered by priority then due date.
+ * Fetches all tasks for the authenticated user, ordered by priority then due date.
  *
- * @param {Object} req - Request with query param: userId
+ * @param {Object} req - Request object
  * @param {Object} res - Response with array of task objects
+ * @param {number|string} userId - Authenticated user ID
  */
-async function getTasks(req, res) {
-  const { userId } = req.query;
-
-  if (!userId) {
-    return res.status(400).json({ error: "userId is required" });
-  }
-
+async function getTasks(req, res, userId) {
   // sql() — Neon tagged-template query function (from _db.js)
   const tasks = await sql`
     SELECT * FROM tasks
@@ -63,20 +64,21 @@ async function getTasks(req, res) {
 }
 
 /**
- * Creates a new task for a user.
+ * Creates a new task for the authenticated user.
  *
- * @param {Object} req - Request with body: { userId, title, category?, priority?,
+ * @param {Object} req - Request with body: { title, category?, priority?,
  *                        dueDate?, source?, canvasAssignmentId?, parentTaskId?, metadata? }
  * @param {Object} res - Response with the newly created task
+ * @param {number|string} userId - Authenticated user ID
  */
-async function createTask(req, res) {
+async function createTask(req, res, userId) {
   const {
-    userId, title, category, priority,
+    title, category, priority,
     dueDate, source, canvasAssignmentId, parentTaskId, metadata
   } = req.body;
 
-  if (!userId || !title) {
-    return res.status(400).json({ error: "userId and title are required" });
+  if (!title) {
+    return res.status(400).json({ error: "title is required" });
   }
 
   const tasks = await sql`
@@ -98,8 +100,9 @@ async function createTask(req, res) {
  *
  * @param {Object} req - Request with body: { id, ...fieldsToUpdate }
  * @param {Object} res - Response with the updated task
+ * @param {number|string} userId - Authenticated user ID
  */
-async function updateTask(req, res) {
+async function updateTask(req, res, userId) {
   const { id, title, category, priority, dueDate, completed, metadata } = req.body;
 
   if (!id) {
@@ -115,7 +118,7 @@ async function updateTask(req, res) {
       completed = COALESCE(${completed ?? null}, completed),
       metadata  = COALESCE(${metadata ? JSON.stringify(metadata) : null}, metadata),
       updated_at = now()
-    WHERE id = ${id}
+    WHERE id = ${id} AND user_id = ${userId}
     RETURNING *
   `;
 
@@ -131,15 +134,20 @@ async function updateTask(req, res) {
  *
  * @param {Object} req - Request with query param: id
  * @param {Object} res - Response confirming deletion
+ * @param {number|string} userId - Authenticated user ID
  */
-async function deleteTask(req, res) {
+async function deleteTask(req, res, userId) {
   const { id } = req.query;
 
   if (!id) {
     return res.status(400).json({ error: "Task id is required" });
   }
 
-  const result = await sql`DELETE FROM tasks WHERE id = ${id} RETURNING id`;
+  const result = await sql`
+    DELETE FROM tasks
+    WHERE id = ${id} AND user_id = ${userId}
+    RETURNING id
+  `;
 
   if (result.length === 0) {
     return res.status(404).json({ error: "Task not found" });

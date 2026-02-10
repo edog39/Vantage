@@ -2,7 +2,9 @@
  * login.js
  *
  * Vercel serverless API route for user authentication.
- * Validates email/password against the users table, returns a JWT on success.
+ * Validates email/password against the users table, returns access and refresh
+ * tokens on success so both the website and the Chrome extension can
+ * authenticate against a shared backend.
  *
  * Design follows backend-architect principles:
  * - JWT for stateless auth (horizontal scaling)
@@ -20,10 +22,7 @@
 import { sql } from "../_db.js";
 import { cors } from "../_cors.js";
 import bcrypt from "bcryptjs";
-import jwt from "jsonwebtoken";
-
-const JWT_SECRET = process.env.JWT_SECRET || "vantage-dev-secret-change-in-production";
-const JWT_EXPIRES_IN = "7d";
+import { issueTokenPair, signAccessToken } from "../_auth.js";
 
 /**
  * Validates and sanitizes login request body.
@@ -88,12 +87,14 @@ export default async function handler(req, res) {
       return res.status(401).json({ error: "Invalid email or password" });
     }
 
-    const token = jwt.sign(
-      { sub: user.id, email: user.email },
-      JWT_SECRET,
-      { expiresIn: JWT_EXPIRES_IN }
-    );
+    // Issue a fresh access/refresh token pair for this user.
+    const { accessToken, refreshToken } = await issueTokenPair({
+      id: user.id,
+      email: user.email,
+    });
 
+    // For backward compatibility with any existing clients, also return `token`
+    // as an alias of the short-lived access token.
     res.status(200).json({
       user: {
         id: user.id,
@@ -101,7 +102,9 @@ export default async function handler(req, res) {
         name: user.name,
         role: user.role,
       },
-      token,
+      accessToken,
+      refreshToken,
+      token: accessToken,
     });
   } catch (err) {
     console.error("Login API error:", err);

@@ -3,7 +3,9 @@
  *
  * Vercel serverless API route for user registration.
  * Hashes password with bcrypt, inserts into users table, initializes
- * stats and preferences, returns user and JWT.
+ * stats and preferences, and returns access and refresh tokens so both
+ * the website and the Chrome extension can authenticate against a
+ * shared backend.
  *
  * Design follows backend-architect principles:
  * - Password hashed at rest (bcrypt)
@@ -21,10 +23,7 @@
 import { sql } from "../_db.js";
 import { cors } from "../_cors.js";
 import bcrypt from "bcryptjs";
-import jwt from "jsonwebtoken";
-
-const JWT_SECRET = process.env.JWT_SECRET || "vantage-dev-secret-change-in-production";
-const JWT_EXPIRES_IN = "7d";
+import { issueTokenPair } from "../_auth.js";
 const BCRYPT_ROUNDS = 10;
 const ALLOWED_ROLES = ["student", "business"];
 
@@ -95,15 +94,19 @@ export default async function handler(req, res) {
       sql`INSERT INTO preferences (user_id) VALUES (${user.id}) ON CONFLICT (user_id) DO NOTHING`,
     ]);
 
-    const token = jwt.sign(
-      { sub: user.id, email: user.email },
-      JWT_SECRET,
-      { expiresIn: JWT_EXPIRES_IN }
-    );
+    // Issue a fresh access/refresh token pair for the new user.
+    const { accessToken, refreshToken } = await issueTokenPair({
+      id: user.id,
+      email: user.email,
+    });
 
+    // For backward compatibility with any existing clients, also return `token`
+    // as an alias of the short-lived access token.
     res.status(200).json({
       user: { id: user.id, email: user.email, name: user.name, role: user.role },
-      token,
+      accessToken,
+      refreshToken,
+      token: accessToken,
     });
   } catch (err) {
     console.error("Signup API error:", err);

@@ -5,12 +5,13 @@
  * Handles fetching and updating display/sort preferences.
  *
  * Routes:
- *   GET /api/preferences?userId=...  — Fetch preferences for a user
- *   PUT /api/preferences             — Update preferences
+ *   GET /api/preferences             — Fetch preferences for the authenticated user
+ *   PUT /api/preferences             — Update preferences for the authenticated user
  */
 
 import { sql } from "./_db.js";
 import { cors } from "./_cors.js";
+import { requireAuth } from "./_auth.js";
 
 /**
  * Main request handler for the /api/preferences endpoint.
@@ -22,12 +23,17 @@ export default async function handler(req, res) {
   if (cors(req, res)) return;
 
   try {
+    const auth = requireAuth(req, res);
+    if (!auth) {
+      return;
+    }
+
     if (req.method === "GET") {
-      return await getPreferences(req, res);
+      return await getPreferences(req, res, auth.userId);
     }
 
     if (req.method === "PUT") {
-      return await updatePreferences(req, res);
+      return await updatePreferences(req, res, auth.userId);
     }
 
     res.status(405).json({ error: "Method not allowed" });
@@ -38,18 +44,13 @@ export default async function handler(req, res) {
 }
 
 /**
- * Fetches preferences for a given user.
+ * Fetches preferences for the authenticated user.
  *
- * @param {Object} req - Request with query param: userId
+ * @param {Object} req - Request object
  * @param {Object} res - Response with preferences object
+ * @param {number|string} userId - Authenticated user ID
  */
-async function getPreferences(req, res) {
-  const { userId } = req.query;
-
-  if (!userId) {
-    return res.status(400).json({ error: "userId is required" });
-  }
-
+async function getPreferences(req, res, userId) {
   // sql() — Neon tagged-template query function (from _db.js)
   const prefs = await sql`SELECT * FROM preferences WHERE user_id = ${userId}`;
 
@@ -61,18 +62,15 @@ async function getPreferences(req, res) {
 }
 
 /**
- * Updates preferences for a given user.
+ * Updates preferences for the authenticated user.
  * Only provided fields are updated; others remain unchanged.
  *
- * @param {Object} req - Request with body: { userId, sortBy?, filterCategory?, darkMode? }
+ * @param {Object} req - Request with body: { sortBy?, filterCategory?, darkMode? }
  * @param {Object} res - Response with the updated preferences
+ * @param {number|string} userId - Authenticated user ID
  */
-async function updatePreferences(req, res) {
-  const { userId, sortBy, filterCategory, darkMode } = req.body;
-
-  if (!userId) {
-    return res.status(400).json({ error: "userId is required" });
-  }
+async function updatePreferences(req, res, userId) {
+  const { sortBy, filterCategory, darkMode } = req.body;
 
   const updated = await sql`
     UPDATE preferences SET

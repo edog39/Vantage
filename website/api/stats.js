@@ -5,12 +5,13 @@
  * Handles fetching and updating streak/completion stats.
  *
  * Routes:
- *   GET  /api/stats?userId=...  — Fetch stats for a user
- *   POST /api/stats             — Record a task completion (updates stats)
+ *   GET  /api/stats             — Fetch stats for the authenticated user
+ *   POST /api/stats             — Record a task completion (updates stats) for the authenticated user
  */
 
 import { sql } from "./_db.js";
 import { cors } from "./_cors.js";
+import { requireAuth } from "./_auth.js";
 
 /**
  * Main request handler for the /api/stats endpoint.
@@ -22,12 +23,17 @@ export default async function handler(req, res) {
   if (cors(req, res)) return;
 
   try {
+    const auth = requireAuth(req, res);
+    if (!auth) {
+      return;
+    }
+
     if (req.method === "GET") {
-      return await getStats(req, res);
+      return await getStats(req, res, auth.userId);
     }
 
     if (req.method === "POST") {
-      return await recordCompletion(req, res);
+      return await recordCompletion(req, res, auth.userId);
     }
 
     res.status(405).json({ error: "Method not allowed" });
@@ -38,18 +44,13 @@ export default async function handler(req, res) {
 }
 
 /**
- * Fetches stats for a given user.
+ * Fetches stats for the authenticated user.
  *
- * @param {Object} req - Request with query param: userId
+ * @param {Object} req - Request object
  * @param {Object} res - Response with the stats object
+ * @param {number|string} userId - Authenticated user ID
  */
-async function getStats(req, res) {
-  const { userId } = req.query;
-
-  if (!userId) {
-    return res.status(400).json({ error: "userId is required" });
-  }
-
+async function getStats(req, res, userId) {
   // sql() — Neon tagged-template query function (from _db.js)
   const stats = await sql`SELECT * FROM stats WHERE user_id = ${userId}`;
 
@@ -61,18 +62,15 @@ async function getStats(req, res) {
 }
 
 /**
- * Records a task completion — increments counters, updates streaks,
- * and tracks per-category breakdowns.
+ * Records a task completion for the authenticated user — increments counters,
+ * updates streaks, and tracks per-category breakdowns.
  *
- * @param {Object} req - Request with body: { userId, category, spawnedCount }
+ * @param {Object} req - Request with body: { category, spawnedCount }
  * @param {Object} res - Response with updated stats
+ * @param {number|string} userId - Authenticated user ID
  */
-async function recordCompletion(req, res) {
-  const { userId, category, spawnedCount = 0 } = req.body;
-
-  if (!userId) {
-    return res.status(400).json({ error: "userId is required" });
-  }
+async function recordCompletion(req, res, userId) {
+  const { category, spawnedCount = 0 } = req.body;
 
   // Fetch current stats
   const current = await sql`SELECT * FROM stats WHERE user_id = ${userId}`;
