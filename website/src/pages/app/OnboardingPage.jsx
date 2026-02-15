@@ -23,6 +23,7 @@ import {
   setOnboarding,
   setOnboardingCompleted,
 } from "../../lib/session";
+import { requestJson } from "../../lib/apiClient";
 
 const STEPS = [
   { id: "business", title: "About your business" },
@@ -78,6 +79,7 @@ export default function OnboardingPage() {
     searchConsole: false,
   });
   const [focus, setFocus] = useState(saved.focus || "");
+  const [scanning, setScanning] = useState(false);
 
   const step = STEPS[stepIdx];
 
@@ -141,11 +143,33 @@ export default function OnboardingPage() {
 
   /**
    * finish — Marks onboarding complete and routes to dashboard.
+   * If the user provided a website URL, triggers an AI scan first to generate
+   * initial tasks, then navigates. On scan failure we still complete and navigate.
    *
-   * @returns {void}
+   * @returns {Promise<void>}
    */
-  const finish = () => {
+  const finish = async () => {
     persistDraft();
+    const urlToScan = normalizeUrl(websiteUrl);
+
+    if (urlToScan) {
+      setScanning(true);
+      try {
+        await requestJson("/api/scan-website", {
+          method: "POST",
+          body: {
+            url: urlToScan,
+            focus,
+            businessType,
+          },
+        });
+      } catch (err) {
+        console.warn("Website scan failed (onboarding still completes):", err);
+      } finally {
+        setScanning(false);
+      }
+    }
+
     setOnboardingCompleted(true);
     navigate("/app");
   };
@@ -357,9 +381,9 @@ export default function OnboardingPage() {
                 type="button"
                 className={styles.primary}
                 onClick={finish}
-                disabled={!canFinishFocusStep}
+                disabled={!canFinishFocusStep || scanning}
               >
-                Generate my plan
+                {scanning ? "Scanning your site…" : "Generate my plan"}
               </button>
             </div>
           </section>
